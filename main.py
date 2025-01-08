@@ -35,7 +35,7 @@ def add_background_image(image_url):
 
 
 def gather_inputs():
-    st.title("🍳 Recipe Recommendation App")
+    st.title("🍳 Recipe Recommendation ChatBot")
     st.markdown(
         """
         Welcome to the **Recipe Recommendation App**! 🥗  
