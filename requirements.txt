@@ -1,3 +1,4 @@
-langchain_groq==0.1.0
-streamlit==1.17.0
-python-dotenv==0.21.0
+langchain_groq==0.1.9
+streamlit==1.37.0
+python-dotenv==1.0.1
+altair==5.4.1  # Adding altair as it's required for Streamlit
