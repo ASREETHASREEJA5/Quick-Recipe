@@ -1,53 +1,79 @@
 import numpy as np
 from langchain_groq import ChatGroq
 import streamlit as st
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
+
+
+groq_api_key = os.getenv('GROQ_API_KEY')
 
 
 llm = ChatGroq(
     temperature=0,
-    groq_api_key='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',  # Replace with your actual Groq API key
+    groq_api_key=groq_api_key,  # Replace with your actual Groq API key
     model_name="llama-3.1-70b-versatile"
 )
 
-# Function to gather user input
+
+def add_background_image(image_url):
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("{image_url}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+
 def gather_inputs():
-    # Ask the user for basic recipe preferences
-    st.title("Recipe Recommendation")
+    st.title("🍳 Recipe Recommendation App")
+    st.markdown(
+        """
+        Welcome to the **Recipe Recommendation App**! 🥗  
+        Fill in your preferences below, and we'll generate a personalized recipe for you.
+        """
+    )
+
     
-    # Input for what the user would like to prepare
-    dish_type = st.text_input("What would you like to prepare? (e.g., vegan pasta, chicken curry)")
+    dish_type = st.text_input("What would you like to prepare? (e.g., vegan pasta, chicken curry)", key="dish")
 
-    # Number of people
-    people_count = st.number_input("How many people are you cooking for?", min_value=1, step=1)
+    people_count = st.slider("How many people are you cooking for?", min_value=1, max_value=10, step=1)
 
-    # Time available for cooking
     time_available = st.number_input("How much time do you have? (in minutes)", min_value=1, step=5)
 
-    # Dietary requirements dropdown
-    dietary_requirements = st.selectbox(
-        "Do you have any dietary requirements?",
-        ("None", "Vegetarian", "Pescatarian", "Vegan", "Dairy-Free", "Gluten-Free", "Keto", "Paleo")
+    dietary_requirements = st.multiselect(
+        "Select any dietary requirements:",
+        ["None", "Vegetarian", "Pescatarian", "Vegan", "Dairy-Free", "Gluten-Free", "Keto", "Paleo"],
+        default="None"
     )
-    
-    # Store the inputs as a dictionary
+
     user_input = {
         'dish_type': dish_type,
         'people_count': people_count,
         'time_available': time_available,
-        'dietary_requirements': dietary_requirements
+        'dietary_requirements': ", ".join(dietary_requirements) if dietary_requirements else "None"
     }
 
     return user_input
 
-# Function to generate the Llama prompt based on user inputs
+
 def generate_response(user_input):
-    # Extracting user inputs
+
     dish_type = user_input['dish_type']
     people_count = user_input['people_count']
     time_available = user_input['time_available']
     dietary_requirements = user_input['dietary_requirements']
 
-    # Creating the Llama prompt
+
     prompt = f"""
     Generate a recipe for {dish_type} that serves {people_count} people. 
     The recipe should take approximately {time_available} minutes to prepare.
@@ -80,16 +106,21 @@ def generate_response(user_input):
     res = llm.invoke(prompt)
     return res.content
 
-# Main Streamlit app
+
 def main():
-    user_input = gather_inputs()  # Collect user inputs
 
-    if st.button("Get Recipe"):
-        recipe = generate_response(user_input)
+    add_background_image("https://img.freepik.com/premium-photo/cooking-ingredient-white-table-background_826551-2435.jpg?w=900")
 
-        # Display the recipe
-        st.write(recipe)
+    user_input = gather_inputs()  
 
-# Run the app
+    if st.button("🍴 Generate My Recipe"):
+        with st.spinner("Generating your recipe..."):
+            recipe = generate_response(user_input)
+
+        st.success("Here’s your personalized recipe! 🍽️")
+        st.markdown(f"### {user_input['dish_type'].capitalize()}")
+        st.markdown(recipe)
+
+
 if __name__ == "__main__":
     main()
